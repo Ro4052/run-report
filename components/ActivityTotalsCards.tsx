@@ -1,4 +1,4 @@
-import type { ActivityTotals, TotalType } from "../pages/api/activities/totals";
+import type { ActivityTotals, TotalType } from "../types/activities";
 import { TotalCard, TotalCardProps } from "./TotalCard";
 
 const formatIntegerStringWithCommas = (numberToFormat: string): string => (

@@ -1,11 +1,7 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export interface ActivityTotals {
-  distance: number;
-  elevation: number;
-  time: number;
-}
-export type TotalType = keyof ActivityTotals;
+import type { ActivityTotals } from '../../../types/activities';
+
 
 const getActivityTotals = (): ActivityTotals => {
   return {
@@ -15,7 +11,7 @@ const getActivityTotals = (): ActivityTotals => {
   };
 };
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => {
+const handler = (req: NextApiRequest, res: NextApiResponse<ActivityTotals>) => {
   const { method } = req;
   switch (method) {
     case 'GET':

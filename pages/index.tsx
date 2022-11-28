@@ -1,27 +1,41 @@
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
+import { Home } from '../components/Home';
 
-import { ActivityTotalsCards } from '../components/ActivityTotalsCards';
-import type { ActivityTotals } from './api/activities/totals';
+
+const SWR_OPTIONS = {
+  revalidateOnFocus: false
+};
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await fetch(url, { method: 'POST' });
   const data = await res.json();
 
-  if (res.status !== 200) {
+  if (res.status !== 307) {
     throw new Error(data.message);
   }
 
-  return data;
-}
+  return data ?? '';
+};
 
-const Home = () => {
-  const { data, error } = useSWR<ActivityTotals>('/api/activities/totals', fetcher);
+const Index = () => {
+  const { data: redirectURL, error } = useSWR<string>('/api/user/authorise', fetcher, SWR_OPTIONS);
+  const [authorised, setAuthorised] = useState<boolean>(false);
+  
+  useEffect(() => {
+    if (redirectURL?.length) {
+      window.location.replace(redirectURL);
+      return;
+    }
+
+    setAuthorised(redirectURL !== undefined);
+  }, [redirectURL]);
 
   return (
-    <div className="p-4">
-      {error ? 'Failed to load...' : <ActivityTotalsCards activityTotals={data ?? null} />}
-    </div>
+    <>
+      {error ? 'Failed to authorise...' : (authorised && <Home />)}
+    </>
   );
 };
 
-export default Home;
+export default Index;

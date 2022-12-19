@@ -38,19 +38,22 @@ export const initiateOAuthJourney = (req: NextApiRequest, res: NextApiResponse<s
 };
 
 const getAccessCode = (req: NextApiRequest, res: NextApiResponse<void>): string | null => {
-  const { query: { error, scope, code } } = req;
+  const { error, scope, code } = req.query;
   if (error === 'access_denied') {
+    console.log('Access to Strava denied');
     redirectToErrorPage(res, 'Access to Strava not granted');
     return null;
   }
 
   if (typeof scope !== 'string' || !code || typeof code !== 'string') {
+    console.log('Scope or code invalid');
     redirectToErrorPage(res, 'Authentication failed');
     return null;
   }
 
   const permittedScopes = scope.split(',');
   if (!permittedScopes.includes('activity:read') || !permittedScopes.includes('activity:read_all')) {
+    console.log('Required scopes not granted');
     redirectToErrorPage(res, 'Insufficient permissions granted');
     return null;
   }
@@ -61,12 +64,13 @@ const getAccessCode = (req: NextApiRequest, res: NextApiResponse<void>): string 
 export const initiateTokenExchangeJourney = async (req: NextApiRequest, res: NextApiResponse<void>) => {
   const accessCode = getAccessCode(req, res);
   if (!accessCode) {
-    redirectToErrorPage(res, 'Authentication failed');
+    console.log('Access code not retrieved');
     return;
   }
 
   const userID = await exchangeTokens(accessCode);
   if (!userID) {
+    console.log('Did not receive userID from token exchange');
     redirectToErrorPage(res, 'Authentication failed');
     return;
   }

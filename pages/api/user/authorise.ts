@@ -5,6 +5,7 @@ import { initiateOAuthJourney } from '../../../lib/oauth-journey';
 import { hasAccessTokenExpired, refreshAccessToken } from '../../../lib/tokens';
 import { getUserEntry } from '../../../lib/db';
 import { USER_ID_COOKIE } from '../../../lib/shared-constants';
+import { initialiseWebhook } from '../../../lib/webhook';
 
 const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<string>, userID: string) => {
   console.log(`Using existing user ID: ${userID}`);
@@ -28,6 +29,7 @@ const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<st
 
 const authorise = async (req: NextApiRequest, res: NextApiResponse<string>) => {
   try {
+    initialiseWebhook(req);
     const userID = getCookie(USER_ID_COOKIE, { req, res });
     if (!userID || typeof userID !== 'string') {
       initiateOAuthJourney(req, res);

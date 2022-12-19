@@ -5,7 +5,7 @@ export const runStravaCorsMiddleware = async (req: NextApiRequest, res: NextApiR
   new Promise<void>((resolve, reject) => {
     const cors = Cors({
       origin: 'https://www.strava.com',
-      methods: ['GET']
+      methods: ['POST']
     });
 
     cors(req, res, (error) => {

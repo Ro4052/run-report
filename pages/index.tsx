@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import useSWR from 'swr';
+
 import { Home } from '../components/Home';
 
 
@@ -19,17 +19,28 @@ const fetcher = async (url: string) => {
 };
 
 const Index = () => {
-  const { data: redirectURL, error } = useSWR<string>('/api/user/authorise', fetcher, SWR_OPTIONS);
   const [authorised, setAuthorised] = useState<boolean>(false);
-  
-  useEffect(() => {
-    if (redirectURL?.length) {
-      window.location.replace(redirectURL);
-      return;
-    }
+  const [error, setError] = useState<boolean>(false);
 
-    setAuthorised(redirectURL !== undefined);
-  }, [redirectURL]);
+  useEffect(() => {
+    const requestAuthorise = async () => {
+      const response = await fetch('/api/user/authorise', { method: 'POST' });
+      if (response.status !== 200 && response.status !== 307) {
+        setError(true);
+        return;
+      }
+
+      const redirectURL = await response.json() as string;
+      if (redirectURL.length > 0) {
+        window.location.replace(redirectURL);
+        return;
+      }
+
+      setAuthorised(true);
+    };
+
+    requestAuthorise();
+  }, []);
 
   return (
     <>

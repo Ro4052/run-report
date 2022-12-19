@@ -1,6 +1,9 @@
 import type { ActivityTotals, TotalType } from "../types/activities";
 import { TotalCard, TotalCardProps } from "./TotalCard";
 
+const ONE_HOUR_IN_MS = 60 * 60 * 1_000;
+const ONE_MINUTE_IN_MS = 60 * 1_000;
+
 const formatIntegerStringWithCommas = (numberToFormat: string): string => (
   numberToFormat.length <= 3
     ? numberToFormat
@@ -19,10 +22,10 @@ const padStartToTwoFigures = (numberToPad: number): string => {
   return numberString.length === 1 ? `0${numberString}` : numberString;
 };
 
-const timeInSecondsToString = (timeInSeconds: number): string => {
-  const hours = Math.floor(timeInSeconds / 3_600);
-  const minutes = Math.floor((timeInSeconds - hours * 3_600) / 60);
-  const seconds = timeInSeconds - hours * 3_600 - minutes * 60;
+const timeInSecondsToString = (timeMs: number): string => {
+  const hours = Math.floor(timeMs / ONE_HOUR_IN_MS);
+  const minutes = Math.floor((timeMs - hours * ONE_HOUR_IN_MS) / ONE_MINUTE_IN_MS);
+  const seconds = (timeMs - hours * ONE_HOUR_IN_MS - minutes * ONE_MINUTE_IN_MS) / 1000;
 
   return `${padStartToTwoFigures(hours)}:${padStartToTwoFigures(minutes)}:${padStartToTwoFigures(seconds)}`;
 };

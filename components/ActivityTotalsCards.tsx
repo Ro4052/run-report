@@ -27,7 +27,7 @@ const timeInSecondsToString = (timeMs: number): string => {
   const minutes = Math.floor((timeMs - hours * ONE_HOUR_IN_MS) / ONE_MINUTE_IN_MS);
   const seconds = (timeMs - hours * ONE_HOUR_IN_MS - minutes * ONE_MINUTE_IN_MS) / 1000;
 
-  return `${padStartToTwoFigures(hours)}:${padStartToTwoFigures(minutes)}:${padStartToTwoFigures(seconds)}`;
+  return `${hours}:${padStartToTwoFigures(minutes)}:${padStartToTwoFigures(seconds)}`;
 };
 
 const TOTALS: TotalType[] = ['distance', 'time', 'elevation'];

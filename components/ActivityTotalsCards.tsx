@@ -14,7 +14,7 @@ const formatNumber = (numberToformat: number): string => {
   const numberAsString = `${numberToformat}`;
   const [integer, decimal] = numberAsString.split('.');
   const formattedInteger = formatIntegerStringWithCommas(integer);
-  return decimal ? `${formattedInteger}.${decimal}` : formattedInteger;
+  return decimal ? `${formattedInteger}.${Math.round(+[decimal.slice(0, 2), decimal.slice(2)].join('.'))}` : formattedInteger;
 };
 
 const padStartToTwoFigures = (numberToPad: number): string => {
@@ -44,7 +44,7 @@ const totalTypeToStatPropsCreator: Record<TotalType, (total: number) => TotalCar
   elevation: (elevationInMetres) => ({
     note: 'Elevation note',
     unit: 'm',
-    value: formatNumber(elevationInMetres)
+    value: formatNumber(Math.round(elevationInMetres))
   })
 };
 

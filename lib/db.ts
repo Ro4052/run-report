@@ -4,8 +4,6 @@ export interface UserEntry {
   _id: string;
   accessToken: string;
   accessTokenExpiry: number; // Note: This comes in seconds, so convert to ms
-  firstName: string;
-  lastName: string;
   refreshToken: string;
 }
 

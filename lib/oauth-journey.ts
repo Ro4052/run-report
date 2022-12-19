@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { setCookie } from 'cookies-next';
 import absoluteUrl from 'next-absolute-url';
-import { getCookie, setCookie } from 'cookies-next';
 
 import { exchangeTokens } from './tokens';
 import { STRAVA_HOST, USER_ID_COOKIE } from './shared-constants';
 import { createURL } from './create-url';
+import { redirectToErrorPage } from './error-redirect';
 
 const AUTHORISE_PATH = '/oauth/authorize';
 const INITIATE_EXCHANGE_PATH = '/api/user/exchange';
@@ -32,17 +33,8 @@ const createOAuthURL = (req: NextApiRequest): string => {
 
 export const initiateOAuthJourney = (req: NextApiRequest, res: NextApiResponse<string>) => {
   console.log('Initiating OAuth journey');
-  const oAuthURL = createURL(STRAVA_HOST, AUTHORISE_PATH)
-    .addQueryParam('client_id', clientID)
-    .addQueryParam('response_type', 'code')
-    .addQueryParam('redirect_uri', origin + INITIATE_EXCHANGE_PATH)
-    .addQueryParam('scope', REQUESTED_SCOPES.join(','))
-    .toString();
+  const oAuthURL = createOAuthURL(req);
   res.status(307).json(oAuthURL);
-};
-
-const redirectToErrorPage = (res: NextApiResponse, message: string) => {
-  res.redirect(308, `/error?message=${message.replace(' ', '%20')}`).end();
 };
 
 const getAccessCode = (req: NextApiRequest, res: NextApiResponse<void>): string | null => {
@@ -69,14 +61,16 @@ const getAccessCode = (req: NextApiRequest, res: NextApiResponse<void>): string 
 export const initiateTokenExchangeJourney = async (req: NextApiRequest, res: NextApiResponse<void>) => {
   const accessCode = getAccessCode(req, res);
   if (!accessCode) {
-    return;
-  }
-
-  const success = await exchangeTokens(accessCode);
-  if (!success) {
     redirectToErrorPage(res, 'Authentication failed');
     return;
   }
 
+  const userID = await exchangeTokens(accessCode);
+  if (!userID) {
+    redirectToErrorPage(res, 'Authentication failed');
+    return;
+  }
+
+  setCookie(USER_ID_COOKIE, userID, { req, res });
   res.redirect(308, '/').end();
 };

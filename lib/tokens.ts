@@ -53,7 +53,7 @@ export const refreshAccessToken = async (user: UserEntry) => {
   const entryUpdate: Partial<UserEntry> & { _id: string } = {
     _id,
     accessToken,
-    accessTokenExpiry: expires_at * 1000,
+    accessTokenExpiry: expires_at * 1_000,
     refreshToken
   };
 
@@ -62,13 +62,11 @@ export const refreshAccessToken = async (user: UserEntry) => {
 
 interface TokenExchangeResponse extends TokenRefreshResponse {
   athlete: {
-    firstname: string;
-    id: string;
-    lastname: string;
+    id: number;
   };
 }
 
-export const exchangeTokens = async (accessCode: string): Promise<boolean> => {
+export const exchangeTokens = async (accessCode: string): Promise<string | null> => {
   try {
     const exchangeURL = createURL(STRAVA_HOST, EXCHANGE_PATH)
       .addQueryParam('client_id', clientID)
@@ -82,27 +80,24 @@ export const exchangeTokens = async (accessCode: string): Promise<boolean> => {
     const {
       access_token: accessToken,
       athlete: {
-        firstname: firstName,
-        id: _id,
-        lastname: lastName
+        id,
       },
       expires_at,
       refresh_token: refreshToken
     } = body;
 
+    const _id = id.toString();
     const userData: UserEntry = {
       _id,
       accessToken,  
       accessTokenExpiry: expires_at * 1000,
-      firstName,
-      lastName,
       refreshToken
     };
 
     await createOrUpdateUserEntry(userData);
 
-    return true;
+    return _id;
   } catch (e) {
-    return false;
+    return null;
   }
 };

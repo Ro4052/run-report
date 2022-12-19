@@ -11,7 +11,7 @@ const fetcher = async (url: string) => {
   const res = await fetch(url, { method: 'POST' });
   const data = await res.json();
 
-  if (res.status !== 307) {
+  if (res.status !== 200 && res.status !== 307) {
     throw new Error(data.message);
   }
 

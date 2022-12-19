@@ -23,7 +23,7 @@ const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<st
     }
   }
   
-  res.status(200).end();
+  res.status(200).json('');
 };
 
 const authorise = async (req: NextApiRequest, res: NextApiResponse<string>) => {

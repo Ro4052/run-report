@@ -1,4 +1,4 @@
-import { Collection, MongoClient } from 'mongodb';
+import { Collection, MongoClient, WithId } from 'mongodb';
 
 export interface UserEntry {
   _id: string;
@@ -7,11 +7,17 @@ export interface UserEntry {
   refreshToken: string;
 }
 
-const COLLECTION_NAME = "users";
+interface WebhookSubscriptionEntry {
+  _id: string; // Host URL
+  subscriptionID: string;
+}
+
+const USERS_COLLECTION_NAME = 'users';
+const WEBHOOK_SUBSCRIPTIONS_COLLECTION_NAME = 'webhook-subscriptions';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
-  throw new Error("MONGODB_URI is not correctly configured in this environment");
+  throw new Error('MONGODB_URI is not correctly configured in this environment');
 }
 
 let dbConnection: Promise<MongoClient>
@@ -27,27 +33,50 @@ if (process.env.NODE_ENV === 'development') {
   dbConnection = client.connect();
 }
 
-const getCollection = async (): Promise<Collection<UserEntry>> => {
+const getUsersCollection = async (): Promise<Collection<UserEntry>> => {
   const client = await dbConnection;
-  return client.db().collection<UserEntry>(COLLECTION_NAME);
+  return client.db().collection<UserEntry>(USERS_COLLECTION_NAME);
 };
 
-export const getUserEntry = async (_id: string): Promise<UserEntry | null> => {
-  console.log(`Getting entry for '${_id}'`);
-  const collection = await getCollection();
-  return collection.findOne({ _id });
+const getWebhookSubscriptionCollection = async (): Promise<Collection<WebhookSubscriptionEntry>> => {
+  const client = await dbConnection;
+  return client.db().collection<WebhookSubscriptionEntry>(WEBHOOK_SUBSCRIPTIONS_COLLECTION_NAME);
+};
+
+export const getUserEntry = async (userID: string): Promise<UserEntry | null> => {
+  console.log(`Getting user entry for '${userID}'`);
+  const collection = await getUsersCollection();
+  return collection.findOne({ _id: userID });
 };
 
 export const createOrUpdateUserEntry = async (entry: UserEntry) => {
   const { _id } = entry;
-  console.log(`Creating or updating entry for '${_id}'`);
-  const collection = await getCollection();
+  console.log(`Creating or updating user entry for '${_id}'`);
+  const collection = await getUsersCollection();
   collection.replaceOne({ _id }, entry, { upsert: true });
 };
 
-export const updateUserEntry = async (partialEntry: Partial<UserEntry> & { _id: string }) => {
+export const updateUserEntry = async (partialEntry: WithId<Partial<UserEntry>>) => {
   const { _id, ...update } = partialEntry;
-  console.log(`Updating entry for '${_id}'`);
-  const collection = await getCollection();
+  console.log(`Updating user entry for '${_id}'`);
+  const collection = await getUsersCollection();
   return collection.updateOne({ _id }, update);
+};
+
+export const deleteUserEntry = async (userID: string) => {
+  const collection = await getUsersCollection();
+  collection.deleteOne({ _id: userID });
+};
+
+export const getWebhookSubscription = async (origin: string): Promise<WebhookSubscriptionEntry | null> => {
+  console.log(`Getting Webhook subscription for '${origin}'`);
+  const collection = await getWebhookSubscriptionCollection();
+  return collection.findOne({ _id: origin });
+}
+
+
+export const createOrUpdateWebhookSubscription = async (origin: string, subscriptionID: string) => {
+  console.log(`Creating or updating Webhook subscription for '${origin}'`);
+  const collection = await getWebhookSubscriptionCollection();
+  collection.replaceOne({ _id: origin }, { subscriptionID }, { upsert: true });
 };

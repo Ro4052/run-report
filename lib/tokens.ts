@@ -68,6 +68,7 @@ interface TokenExchangeResponse extends TokenRefreshResponse {
 
 export const exchangeTokens = async (accessCode: string): Promise<string | null> => {
   try {
+    console.log('Exchanging tokens');
     const exchangeURL = createURL(STRAVA_HOST, EXCHANGE_PATH)
       .addQueryParam('client_id', clientID)
       .addQueryParam('client_secret', clientSecret)
@@ -98,6 +99,7 @@ export const exchangeTokens = async (accessCode: string): Promise<string | null>
 
     return _id;
   } catch (e) {
+    console.log('Token exchange failed', e);
     return null;
   }
 };

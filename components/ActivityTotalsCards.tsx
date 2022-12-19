@@ -56,7 +56,8 @@ export const ActivityTotalsCards = ({ activityTotals }: ActivityTotalsCardsProps
         activityTotals
           ? <TotalCard key={total} {...totalTypeToStatPropsCreator[total](activityTotals[total])} />
           : <TotalCard key={total} value={null} />
-        ))
+        )
+      )
     )}
   </div>
 );

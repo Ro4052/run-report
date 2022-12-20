@@ -86,11 +86,14 @@ export const processWebhookEvent = async (req: NextApiRequest, res: NextApiRespo
     object_type,
     updates
   }: WebhookEvent = req.body;
+  console.log('Processing Webhook event');
   console.log(req.body);
   res.status(200).end();
   if (aspect_type !== 'delete' || object_type !== 'athlete' || updates.authorized !== 'false') {
+    console.log('Webhook event not relevant');
     return;
   }
 
+  console.log(`Deauthorising '${object_id}'`);
   deleteUserEntry(object_id.toString());
 };

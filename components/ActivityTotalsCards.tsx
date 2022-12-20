@@ -1,50 +1,34 @@
+import { format } from 'd3-format';
+import moment from 'moment';
+
 import type { ActivityTotals, TotalType } from "../types/activities";
 import { TotalCard, TotalCardProps } from "./TotalCard";
 
-const ONE_HOUR_IN_MS = 60 * 60 * 1_000;
-const ONE_MINUTE_IN_MS = 60 * 1_000;
+const TRACK_LENGTH_METRES = 400;
+const SNOWDON_HEIGHT_METRES = 1_085;
 
-const formatIntegerStringWithCommas = (numberToFormat: string): string => (
-  numberToFormat.length <= 3
-    ? numberToFormat
-    : `${formatIntegerStringWithCommas(numberToFormat.slice(0, -3))},${numberToFormat.slice(-3)}`
-);
+const distanceFormatter = format(',.2f');
 
-const formatNumber = (numberToformat: number): string => {
-  const numberAsString = `${numberToformat}`;
-  const [integer, decimal] = numberAsString.split('.');
-  const formattedInteger = formatIntegerStringWithCommas(integer);
-  return decimal ? `${formattedInteger}.${Math.round(+[decimal.slice(0, 2), decimal.slice(2)].join('.'))}` : formattedInteger;
-};
+const durationFormatter = (duration: number) => moment.utc(duration).format('h:mm:ss');
 
-const padStartToTwoFigures = (numberToPad: number): string => {
-  const numberString = `${numberToPad}`;
-  return numberString.length === 1 ? `0${numberString}` : numberString;
-};
-
-const timeInSecondsToString = (timeMs: number): string => {
-  const hours = Math.floor(timeMs / ONE_HOUR_IN_MS);
-  const minutes = Math.floor((timeMs - hours * ONE_HOUR_IN_MS) / ONE_MINUTE_IN_MS);
-  const seconds = (timeMs - hours * ONE_HOUR_IN_MS - minutes * ONE_MINUTE_IN_MS) / 1000;
-
-  return `${hours}:${padStartToTwoFigures(minutes)}:${padStartToTwoFigures(seconds)}`;
-};
+const elevationFormatter = format(',.0f');
+const elevationNoteFormatter = format(',.1f');
 
 const TOTALS: TotalType[] = ['distance', 'time', 'elevation'];
 
 const totalTypeToStatPropsCreator: Record<TotalType, (total: number) => TotalCardProps> = {
   distance: (distanceInMetres) => ({
-    note: 'Distance note',
+    note: `That's the equivalent of ${Math.round(distanceInMetres / TRACK_LENGTH_METRES)} times around a running track`,
     unit: 'km',
-    value: formatNumber(distanceInMetres / 1000)
+    value: distanceFormatter(distanceInMetres / 1000)
   }),
-  time: (timeInSeconds) => ({
-    value: timeInSecondsToString(timeInSeconds)
+  time: (time) => ({
+    value: durationFormatter(time)
   }),
   elevation: (elevationInMetres) => ({
-    note: 'Elevation note',
+    note: `That's the equivalent of ${elevationNoteFormatter(elevationInMetres / SNOWDON_HEIGHT_METRES)} times up Snowdon`,
     unit: 'm',
-    value: formatNumber(Math.round(elevationInMetres))
+    value: elevationFormatter(elevationInMetres)
   })
 };
 

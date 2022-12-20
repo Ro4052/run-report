@@ -2,22 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { Home } from '../components/Home';
 
-
-const SWR_OPTIONS = {
-  revalidateOnFocus: false
-};
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { method: 'POST' });
-  const data = await res.json();
-
-  if (res.status !== 200 && res.status !== 307) {
-    throw new Error(data.message);
-  }
-
-  return data ?? '';
-};
-
 const Index = () => {
   const [authorised, setAuthorised] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -43,9 +27,14 @@ const Index = () => {
   }, []);
 
   return (
-    <>
-      {error ? 'Failed to authorise...' : (authorised && <Home />)}
-    </>
+    <div className="flex flex-col h-screen">
+      <div className="grow">
+        {error ? 'Failed to authorise...' : (authorised && <Home />)}
+      </div>
+      <div className='text-right p-1 text-xs'>
+        <a href='/privacy-and-cookies'>Privacy and Cookies</a>
+      </div>
+    </div>
   );
 };
 

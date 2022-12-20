@@ -80,16 +80,11 @@ interface WebhookEvent {
 }
 
 export const processWebhookEvent = async (req: NextApiRequest, res: NextApiResponse) => {
-  const {
-    aspect_type,
-    object_id,
-    object_type,
-    updates
-  }: WebhookEvent = req.body;
+  const { object_id, updates }: WebhookEvent = req.body;
   console.log('Processing Webhook event');
   console.log(req.body);
   res.status(200).end();
-  if (aspect_type !== 'delete' || object_type !== 'athlete' || updates.authorized !== 'false') {
+  if (updates.authorized !== 'false') {
     console.log('Webhook event not relevant');
     return;
   }

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import type { ActivityTotals } from '../types/activities';
-import { ActivityTotalsCards } from '../components/ActivityTotalsCards';
+import { ActivityTotalsCards } from './ActivityTotalsCards';
 
-export const Home = () => {
+export const Home = (): JSX.Element => {
   const [totals, setTotals] = useState<ActivityTotals | null>(null);
   const [error, setError] = useState<boolean>(false);
 
@@ -22,9 +22,5 @@ export const Home = () => {
     requestTotals();
   }, []);
 
-  return (
-    <div className="p-4">
-      {error ? 'Failed to load...' : <ActivityTotalsCards activityTotals={totals} />}
-    </div>
-  );
+  return error ? <>Failed to load...</> : <ActivityTotalsCards activityTotals={totals} />;
 };

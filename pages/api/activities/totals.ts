@@ -2,10 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getCookie } from 'cookies-next';
 
 import type { ActivityTotals } from '../../../types/activities';
-import { STRAVA_HOST, USER_ID_COOKIE } from '../../../lib/shared-constants';
-import { redirectToErrorPage } from '../../../lib/error-redirect';
-import { getUserEntry } from '../../../lib/db';
-import { createURL } from '../../../lib/create-url';
+import { STRAVA_HOST, USER_ID_COOKIE } from '../../../lib/server/shared-constants';
+import { redirectToErrorPage } from '../../../lib/server/redirect-response';
+import { getUserEntry } from '../../../lib/server/db';
+import { createURL } from '../../../lib/server/create-url';
 
 const ACTIVITIES_PATH = '/api/v3/activities';
 
@@ -25,14 +25,14 @@ const getActivityTotals = async (userID: string): Promise<ActivityTotals> => {
   }
 
   const { accessToken } = userEntry;
-  const beforeTimestamp = new Date().getTime() - SEVEN_DAYS_IN_MS;
+  const afterTimestamp = new Date().getTime() - SEVEN_DAYS_IN_MS;
 
   const activities = [];
   let retrievalComplete = false;
   let page = 1;
   while (!retrievalComplete) {
     const requestURL = createURL(STRAVA_HOST, ACTIVITIES_PATH)
-      .addQueryParam('after', beforeTimestamp / 1_000)
+      .addQueryParam('after', afterTimestamp / 1_000)
       .addQueryParam('page', page)
       .toString();
     
@@ -49,7 +49,7 @@ const getActivityTotals = async (userID: string): Promise<ActivityTotals> => {
   }
 
   return activities
-    .filter(({ type }) => type === "Run")
+    .filter(({ type }) => type === 'Run')
     .reduce<ActivityTotals>((acc, { distance, total_elevation_gain, moving_time }) => ({
       distance: acc.distance + distance,
       elevation: acc.elevation + total_elevation_gain,
@@ -66,7 +66,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<ActivityTotals>
         const totals = await getActivityTotals(userID);
         res.status(200).json(totals);
       } else {
-        redirectToErrorPage(res, "Could not get activity totals");
+        redirectToErrorPage(res, 'Could not get activity totals');
       }
       break;
     default:

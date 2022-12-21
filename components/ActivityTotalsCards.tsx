@@ -1,8 +1,8 @@
 import { format } from 'd3-format';
 import moment from 'moment';
 
-import type { ActivityTotals, TotalType } from "../types/activities";
-import { TotalCard, TotalCardProps } from "./TotalCard";
+import type { ActivityTotals, TotalType } from '../types/activities';
+import { TotalCard, TotalCardProps } from './TotalCard';
 
 const TRACK_LENGTH_METRES = 400;
 const SNOWDON_HEIGHT_METRES = 1_085;
@@ -37,14 +37,11 @@ export interface ActivityTotalsCardsProps {
 }
 
 export const ActivityTotalsCards = ({ activityTotals }: ActivityTotalsCardsProps) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-    {(
+  <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+    {activityTotals && (
       TOTALS.map((total) => (
-        activityTotals
-          ? <TotalCard key={total} {...totalTypeToStatPropsCreator[total](activityTotals[total])} />
-          : <TotalCard key={total} value={null} />
-        )
-      )
+        <TotalCard key={total} {...totalTypeToStatPropsCreator[total](activityTotals[total])} />
+      ))
     )}
   </div>
 );

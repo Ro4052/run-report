@@ -1,10 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import absoluteUrl from "next-absolute-url";
+import type { NextApiRequest, NextApiResponse } from 'next';
+import absoluteUrl from 'next-absolute-url';
 import fetch from 'node-fetch';
 
-import { createURL } from "./create-url";
-import { createOrUpdateWebhookSubscription, deleteUserEntry, getWebhookSubscription } from "./db";
-import { STRAVA_HOST } from "./shared-constants";
+import { createURL } from './create-url';
+import { createOrUpdateWebhookSubscription, deleteUserEntry, getWebhookSubscription } from './db';
+import { STRAVA_HOST } from './shared-constants';
 
 const SUBSCRIBE_PATH = '/api/v3/push_subscriptions';
 const CALLBACK_PATH = '/api/user/deauthorise';

@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { initiateTokenExchangeJourney } from "../../../lib/oauth-journey";
+import { initiateTokenExchangeJourney } from '../../../lib/server/oauth-journey';
 
 const handler = (req: NextApiRequest, res: NextApiResponse<void>) => {
   const { method } = req;

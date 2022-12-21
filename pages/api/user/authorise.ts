@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getCookie } from 'cookies-next';
 
-import { initiateOAuthJourney } from '../../../lib/oauth-journey';
-import { hasAccessTokenExpired, refreshAccessToken } from '../../../lib/tokens';
-import { getUserEntry } from '../../../lib/db';
-import { USER_ID_COOKIE } from '../../../lib/shared-constants';
-import { initialiseWebhook } from '../../../lib/webhook';
+import { initiateOAuthJourney } from '../../../lib/server/oauth-journey';
+import { hasAccessTokenExpired, refreshAccessToken } from '../../../lib/server/tokens';
+import { getUserEntry } from '../../../lib/server/db';
+import { USER_ID_COOKIE } from '../../../lib/server/shared-constants';
+import { initialiseWebhook } from '../../../lib/server/webhook';
 
 const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<string>, userID: string) => {
   console.log(`Using existing user ID: ${userID}`);

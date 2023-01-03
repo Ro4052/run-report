@@ -60,7 +60,7 @@ export const updateUserEntry = async (partialEntry: WithId<Partial<UserEntry>>) 
   const { _id, ...update } = partialEntry;
   console.log(`Updating user entry for '${_id}'`);
   const collection = await getUsersCollection();
-  return collection.updateOne({ _id }, update);
+  return collection.updateOne({ _id }, { $set: { ...update } });
 };
 
 export const deleteUserEntry = async (userID: string) => {

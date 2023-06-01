@@ -89,6 +89,7 @@ interface WebhookEvent {
   aspect_type: "create" | "update" | "delete";
   object_id: number;
   object_type: "activity" | "athlete";
+  subscription_id: string;
   updates: Record<string, string>;
 }
 
@@ -96,9 +97,23 @@ export const processWebhookEvent = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
-  const { object_id: stravaID, updates }: WebhookEvent = req.body;
+  const {
+    object_id: stravaID,
+    updates,
+    subscription_id: subscriptionID,
+  }: WebhookEvent = req.body;
   console.log("Processing Webhook event");
   console.log(req.body);
+
+  const { origin } = absoluteUrl(req);
+  const subscription = await getWebhookSubscription(origin);
+  if (subscription?.subscriptionID !== subscriptionID) {
+    console.log(
+      `Subscription ID '${subscriptionID}' not recognised for this origin`
+    );
+    return;
+  }
+
   if (updates.authorized !== "false") {
     console.log("Webhook event not relevant");
     return;

@@ -109,7 +109,7 @@ export const processWebhookEvent = async (
   const userEntry = await getUserEntryByStravaID(stravaID);
   if (userEntry) {
     const userID = userEntry._id;
-    deleteUserEntry(userID);
-    deleteAccessTokenEntriesForUserID(userID);
+    await deleteUserEntry(userID);
+    await deleteAccessTokenEntriesForUserID(userID);
   }
 };

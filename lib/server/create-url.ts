@@ -1,7 +1,10 @@
 type ParamPairs = Record<string, string | number | boolean>;
 
 interface URLBuilder {
-  addQueryParam: (param: string, value: string | number | boolean) => URLBuilder;
+  addQueryParam: (
+    param: string,
+    value: string | number | boolean
+  ) => URLBuilder;
   toString: () => string;
 }
 
@@ -15,9 +18,11 @@ export const createURL = (base: string, path: string): URLBuilder => {
     },
     toString: () => {
       const urlString = base + path;
-      const paramsString = Object.entries(params).map(([param, value]) => `${param}=${value}`).join('&');
-      return urlString + (paramsString ? `?${paramsString}` : '');
-    }
+      const paramsString = Object.entries(params)
+        .map(([param, value]) => `${param}=${value}`)
+        .join("&");
+      return urlString + (paramsString ? `?${paramsString}` : "");
+    },
   };
 
   return builder;

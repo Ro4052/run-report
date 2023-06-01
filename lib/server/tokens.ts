@@ -1,26 +1,39 @@
-import { v4 as uuidv4 } from 'uuid';
-import fetch from 'node-fetch';
+import { v4 as uuidv4 } from "uuid";
+import fetch from "node-fetch";
 
-import { AccessTokenEntry, createAccessTokenEntry, createUserEntry, deleteAccessTokenEntry, getAccessTokenEntry, getUserEntryByStravaID, updateUserEntry, UserEntry } from './db';
-import { createURL } from './create-url';
-import { STRAVA_HOST } from './shared-constants';
+import {
+  AccessTokenEntry,
+  createAccessTokenEntry,
+  createUserEntry,
+  deleteAccessTokenEntry,
+  getAccessTokenEntry,
+  getUserEntryByStravaID,
+  updateUserEntry,
+  UserEntry,
+} from "./db";
+import { createURL } from "./create-url";
+import { STRAVA_HOST } from "./shared-constants";
 
 const ACCESS_TOKEN_EXPIRY_MS = 3_600_000;
 const TEN_MINS_MS = 600_000;
-const REFRESH_PATH = '/oauth/token';
-const EXCHANGE_PATH = '/api/v3/oauth/token';
+const REFRESH_PATH = "/oauth/token";
+const EXCHANGE_PATH = "/api/v3/oauth/token";
 
 const clientID = process.env.CLIENT_ID;
 if (!clientID) {
-  throw new Error('CLIENT_ID is not correctly configured in this environment');
+  throw new Error("CLIENT_ID is not correctly configured in this environment");
 }
 
 const clientSecret = process.env.CLIENT_SECRET;
 if (!clientSecret) {
-  throw new Error('CLIENT_SECRET is not correctly configured in this environment');
+  throw new Error(
+    "CLIENT_SECRET is not correctly configured in this environment"
+  );
 }
 
-export const hasStravaAccessTokenExpired = ({ accessTokenExpiry }: UserEntry): boolean => {
+export const hasStravaAccessTokenExpired = ({
+  accessTokenExpiry,
+}: UserEntry): boolean => {
   const timeToExpiry = accessTokenExpiry - new Date().getTime();
 
   // If the access token has less than an hour until it expires, Strava will
@@ -38,25 +51,25 @@ export const refreshStravaAccessToken = async (user: UserEntry) => {
   const { _id } = user;
   console.log(`Refreshing access token '${_id}'`);
   const refreshURL = createURL(STRAVA_HOST, REFRESH_PATH)
-    .addQueryParam('client_id', clientID)
-    .addQueryParam('client_secret', clientSecret)
-    .addQueryParam('grant_type', 'refresh_token')
-    .addQueryParam('refresh_token', user.refreshToken)
+    .addQueryParam("client_id", clientID)
+    .addQueryParam("client_secret", clientSecret)
+    .addQueryParam("grant_type", "refresh_token")
+    .addQueryParam("refresh_token", user.refreshToken)
     .toString();
-  const response = await fetch(refreshURL, { method: 'POST' });
-  const body = await response.json() as TokenRefreshResponse;
+  const response = await fetch(refreshURL, { method: "POST" });
+  const body = (await response.json()) as TokenRefreshResponse;
 
   const {
     access_token: accessToken,
     expires_at,
-    refresh_token: refreshToken
+    refresh_token: refreshToken,
   } = body;
 
   const entryUpdate: Partial<UserEntry> & { _id: string } = {
     _id,
     accessToken,
     accessTokenExpiry: expires_at * 1_000,
-    refreshToken
+    refreshToken,
   };
 
   updateUserEntry(entryUpdate);
@@ -68,40 +81,42 @@ interface TokenExchangeResponse extends TokenRefreshResponse {
   };
 }
 
-export const exchangeTokens = async (accessCode: string): Promise<string | null> => {
+export const exchangeTokens = async (
+  accessCode: string
+): Promise<string | null> => {
   try {
-    console.log('Exchanging tokens');
+    console.log("Exchanging tokens");
     const exchangeURL = createURL(STRAVA_HOST, EXCHANGE_PATH)
-      .addQueryParam('client_id', clientID)
-      .addQueryParam('client_secret', clientSecret)
-      .addQueryParam('code', accessCode)
-      .addQueryParam('grant_type', 'authorization_code')
+      .addQueryParam("client_id", clientID)
+      .addQueryParam("client_secret", clientSecret)
+      .addQueryParam("code", accessCode)
+      .addQueryParam("grant_type", "authorization_code")
       .toString();
-    const response = await fetch(exchangeURL, { method: 'POST' });
-    const body = await response.json() as TokenExchangeResponse;
+    const response = await fetch(exchangeURL, { method: "POST" });
+    const body = (await response.json()) as TokenExchangeResponse;
 
     const {
       access_token: accessToken,
-      athlete: {
-        id: stravaID,
-      },
+      athlete: { id: stravaID },
       expires_at,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     } = body;
 
-    const userData: Omit<UserEntry, '_id'> = {
-      accessToken,  
+    const userData: Omit<UserEntry, "_id"> = {
+      accessToken,
       accessTokenExpiry: expires_at * 1_000,
       refreshToken,
-      stravaID
+      stravaID,
     };
 
     const existingUser = await getUserEntryByStravaID(stravaID);
     if (!existingUser) {
       const userID = uuidv4();
-      console.log(`No entry for Strava ID: ${stravaID}, creating user: ${userID}`);
+      console.log(
+        `No entry for Strava ID: ${stravaID}, creating user: ${userID}`
+      );
       createUserEntry({ ...userData, _id: userID });
-      
+
       return userID;
     }
 
@@ -110,7 +125,7 @@ export const exchangeTokens = async (accessCode: string): Promise<string | null>
 
     return existingUser._id;
   } catch (e) {
-    console.log('Token exchange failed', e);
+    console.log("Token exchange failed", e);
     return null;
   }
 };
@@ -121,7 +136,7 @@ export const createNewAccessToken = async (userID: string): Promise<string> => {
   const accessTokenEntry: AccessTokenEntry = {
     _id: accessToken,
     userID,
-    created: Date.now()
+    created: Date.now(),
   };
 
   createAccessTokenEntry(accessTokenEntry);
@@ -129,7 +144,9 @@ export const createNewAccessToken = async (userID: string): Promise<string> => {
   return accessToken;
 };
 
-export const getUserIDFromAccessToken = async(accessToken: string): Promise<string | null> => {
+export const getUserIDFromAccessToken = async (
+  accessToken: string
+): Promise<string | null> => {
   const entry = await getAccessTokenEntry(accessToken);
   if (!entry) {
     return null;

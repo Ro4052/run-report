@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
-import { gotoErrorPage } from '../lib/client/goto-error';
-import { Page } from '../components/Page';
-import { Home } from '../components/Home';
+import { gotoErrorPage } from "../lib/client/goto-error";
+import { Page } from "../components/Page";
+import { Home } from "../components/Home";
 
 const Index = () => {
   const router = useRouter();
@@ -11,13 +11,13 @@ const Index = () => {
 
   useEffect(() => {
     const requestAuthorise = async () => {
-      const response = await fetch('/api/user/authorise', { method: 'POST' });
+      const response = await fetch("/api/user/authorise", { method: "POST" });
       if (response.status !== 200 && response.status !== 307) {
-        gotoErrorPage('Failed to authorise', router);
+        gotoErrorPage("Failed to authorise", router);
         return;
       }
 
-      const redirectURL = await response.json() as string;
+      const redirectURL = (await response.json()) as string;
       if (redirectURL.length > 0) {
         router.replace(redirectURL);
         return;
@@ -29,11 +29,7 @@ const Index = () => {
     requestAuthorise();
   }, [router]);
 
-  return (
-    <Page>
-      {authorised && <Home />}
-    </Page>
-  );
+  return <Page>{authorised && <Home />}</Page>;
 };
 
 export default Index;

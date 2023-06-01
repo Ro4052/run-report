@@ -154,7 +154,7 @@ export const getUserIDFromAccessToken = async (
 
   const currentTime = Date.now();
   if (currentTime - entry.created > ACCESS_TOKEN_EXPIRY_MS) {
-    deleteAccessTokenEntry(accessToken);
+    await deleteAccessTokenEntry(accessToken);
     return null;
   }
 

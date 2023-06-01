@@ -99,7 +99,6 @@ export const processWebhookEvent = async (
   const { object_id: stravaID, updates }: WebhookEvent = req.body;
   console.log("Processing Webhook event");
   console.log(req.body);
-  res.status(200).end();
   if (updates.authorized !== "false") {
     console.log("Webhook event not relevant");
     return;
@@ -117,4 +116,6 @@ export const processWebhookEvent = async (
 
   await deleteUserEntry(userID);
   await deleteAccessTokenEntriesForUserID(userID);
+
+  res.status(200).end();
 };

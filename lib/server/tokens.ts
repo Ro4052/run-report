@@ -32,9 +32,9 @@ if (!clientSecret) {
 }
 
 export const hasStravaAccessTokenExpired = ({
-  accessTokenExpiry,
+  stravaAccessTokenExpiry,
 }: UserEntry): boolean => {
-  const timeToExpiry = accessTokenExpiry - new Date().getTime();
+  const timeToExpiry = stravaAccessTokenExpiry - new Date().getTime();
 
   // If the access token has less than an hour until it expires, Strava will
   // give us a new one. Give ourselves 10 minutes just in case.
@@ -54,22 +54,22 @@ export const refreshStravaAccessToken = async (user: UserEntry) => {
     .addQueryParam("client_id", clientID)
     .addQueryParam("client_secret", clientSecret)
     .addQueryParam("grant_type", "refresh_token")
-    .addQueryParam("refresh_token", user.refreshToken)
+    .addQueryParam("refresh_token", user.stravaRefreshToken)
     .toString();
   const response = await fetch(refreshURL, { method: "POST" });
   const body = (await response.json()) as TokenRefreshResponse;
 
   const {
-    access_token: accessToken,
+    access_token: stravaAccessToken,
     expires_at,
-    refresh_token: refreshToken,
+    refresh_token: stravaRefreshToken,
   } = body;
 
   const entryUpdate: Partial<UserEntry> & { _id: string } = {
     _id,
-    accessToken,
-    accessTokenExpiry: expires_at * 1_000,
-    refreshToken,
+    stravaAccessToken,
+    stravaAccessTokenExpiry: expires_at * 1_000,
+    stravaRefreshToken: stravaRefreshToken,
   };
 
   await updateUserEntry(entryUpdate);
@@ -96,16 +96,16 @@ export const exchangeTokens = async (
     const body = (await response.json()) as TokenExchangeResponse;
 
     const {
-      access_token: accessToken,
+      access_token: stravaAccessToken,
       athlete: { id: stravaID },
       expires_at,
-      refresh_token: refreshToken,
+      refresh_token: stravaRefreshToken,
     } = body;
 
     const userData: Omit<UserEntry, "_id"> = {
-      accessToken,
-      accessTokenExpiry: expires_at * 1_000,
-      refreshToken,
+      stravaAccessToken,
+      stravaAccessTokenExpiry: expires_at * 1_000,
+      stravaRefreshToken,
       stravaID,
     };
 

@@ -72,7 +72,7 @@ export const refreshStravaAccessToken = async (user: UserEntry) => {
     refreshToken,
   };
 
-  updateUserEntry(entryUpdate);
+  await updateUserEntry(entryUpdate);
 };
 
 interface TokenExchangeResponse extends TokenRefreshResponse {
@@ -115,13 +115,13 @@ export const exchangeTokens = async (
       console.log(
         `No entry for Strava ID: ${stravaID}, creating user: ${userID}`
       );
-      createUserEntry({ ...userData, _id: userID });
+      await createUserEntry({ ...userData, _id: userID });
 
       return userID;
     }
 
     console.log(`Updating existing user ${existingUser._id}`);
-    updateUserEntry({ ...existingUser, ...userData });
+    await updateUserEntry({ ...existingUser, ...userData });
 
     return existingUser._id;
   } catch (e) {
@@ -139,7 +139,7 @@ export const createNewAccessToken = async (userID: string): Promise<string> => {
     created: Date.now(),
   };
 
-  createAccessTokenEntry(accessTokenEntry);
+  await createAccessTokenEntry(accessTokenEntry);
 
   return accessToken;
 };

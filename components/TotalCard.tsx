@@ -5,11 +5,13 @@ export interface TotalCardProps {
 }
 
 export const TotalCard = ({ value, unit, note }: TotalCardProps) => (
-  <div className='grid grid-cols-1 grid-rows-1 bg-neutral-200 dark:bg-neutral-500 p-2 rounded shadow-sm'>
-    <span className='text-2xl'>{value} {unit}</span>
+  <div className="grid grid-cols-1 grid-rows-1 bg-neutral-200 dark:bg-neutral-500 p-2 rounded shadow-sm">
+    <span className="text-2xl">
+      {value} {unit}
+    </span>
     {note && (
       <>
-        <span className='text-sm mt-3'>{note}</span>
+        <span className="text-sm mt-3">{note}</span>
       </>
     )}
   </div>

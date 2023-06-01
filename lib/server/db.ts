@@ -2,10 +2,10 @@ import { Collection, MongoClient, WithId } from "mongodb";
 
 export interface UserEntry {
   _id: string;
-  accessToken: string;
-  accessTokenExpiry: number; // Note: This comes in seconds, so convert to ms
-  refreshToken: string;
+  stravaAccessToken: string;
+  stravaAccessTokenExpiry: number; // Note: This comes in seconds, so convert to ms
   stravaID: number;
+  stravaRefreshToken: string;
 }
 
 export interface AccessTokenEntry {

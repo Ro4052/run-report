@@ -28,7 +28,7 @@ const getActivityTotals = async (userID: string): Promise<ActivityTotals> => {
     return emptyTotals;
   }
 
-  const { accessToken } = userEntry;
+  const { stravaAccessToken } = userEntry;
   const afterTimestamp = new Date().getTime() - SEVEN_DAYS_IN_MS;
 
   const activities = [];
@@ -42,7 +42,7 @@ const getActivityTotals = async (userID: string): Promise<ActivityTotals> => {
 
     const response = await fetch(requestURL, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${stravaAccessToken}`,
       },
     });
     const activitiesInPage = await response.json(); // TODO: Add types to the response?

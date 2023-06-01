@@ -60,7 +60,7 @@ export const initialiseWebhook = async (req: NextApiRequest) => {
     return;
   }
 
-  await createOrUpdateWebhookSubscription(origin, data.id.toString());
+  await createOrUpdateWebhookSubscription(origin, data.id);
 };
 
 export const verifyWebhookCallback = (
@@ -89,7 +89,7 @@ interface WebhookEvent {
   aspect_type: "create" | "update" | "delete";
   object_id: number;
   object_type: "activity" | "athlete";
-  subscription_id: string;
+  subscription_id: number;
   updates: Record<string, string>;
 }
 

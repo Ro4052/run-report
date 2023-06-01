@@ -16,7 +16,7 @@ export interface AccessTokenEntry {
 
 interface WebhookSubscriptionEntry {
   _id: string; // Host URL
-  subscriptionID: string;
+  subscriptionID: number;
 }
 
 const USERS_COLLECTION_NAME = "users";
@@ -140,7 +140,7 @@ export const getWebhookSubscription = async (
 
 export const createOrUpdateWebhookSubscription = async (
   origin: string,
-  subscriptionID: string
+  subscriptionID: number
 ) => {
   console.log(`Creating or updating Webhook subscription for: '${origin}'`);
   const collection = await getWebhookSubscriptionCollection();

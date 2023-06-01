@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { setCookie } from 'cookies-next';
 import absoluteUrl from 'next-absolute-url';
 
-import { exchangeTokens } from './tokens';
-import { STRAVA_HOST, USER_ID_COOKIE } from './shared-constants';
+import { exchangeTokens, createNewAccessToken } from './tokens';
+import { STRAVA_HOST, ACCESS_TOKEN_COOKIE } from './shared-constants';
 import { createURL } from './create-url';
 import { redirectToErrorPage } from './redirect-response';
 
@@ -75,6 +75,8 @@ export const initiateTokenExchangeJourney = async (req: NextApiRequest, res: Nex
     return;
   }
 
-  setCookie(USER_ID_COOKIE, userID, { req, res });
+  const accessToken = await createNewAccessToken(userID);
+  setCookie(ACCESS_TOKEN_COOKIE, accessToken, { req, res });
+  
   res.redirect(308, '/').end();
 };

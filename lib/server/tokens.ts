@@ -1,9 +1,11 @@
+import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
 
-import { createOrUpdateUserEntry, updateUserEntry, UserEntry } from './db';
+import { AccessTokenEntry, createAccessTokenEntry, createUserEntry, deleteAccessTokenEntry, getAccessTokenEntry, getUserEntryByStravaID, updateUserEntry, UserEntry } from './db';
 import { createURL } from './create-url';
 import { STRAVA_HOST } from './shared-constants';
 
+const ACCESS_TOKEN_EXPIRY_MS = 3_600_000;
 const TEN_MINS_MS = 600_000;
 const REFRESH_PATH = '/oauth/token';
 const EXCHANGE_PATH = '/api/v3/oauth/token';
@@ -18,7 +20,7 @@ if (!clientSecret) {
   throw new Error('CLIENT_SECRET is not correctly configured in this environment');
 }
 
-export const hasAccessTokenExpired = ({ accessTokenExpiry }: UserEntry): boolean => {
+export const hasStravaAccessTokenExpired = ({ accessTokenExpiry }: UserEntry): boolean => {
   const timeToExpiry = accessTokenExpiry - new Date().getTime();
 
   // If the access token has less than an hour until it expires, Strava will
@@ -32,7 +34,7 @@ interface TokenRefreshResponse {
   refresh_token: string;
 }
 
-export const refreshAccessToken = async (user: UserEntry) => {
+export const refreshStravaAccessToken = async (user: UserEntry) => {
   const { _id } = user;
   console.log(`Refreshing access token '${_id}'`);
   const refreshURL = createURL(STRAVA_HOST, REFRESH_PATH)
@@ -81,25 +83,63 @@ export const exchangeTokens = async (accessCode: string): Promise<string | null>
     const {
       access_token: accessToken,
       athlete: {
-        id,
+        id: stravaID,
       },
       expires_at,
       refresh_token: refreshToken
     } = body;
 
-    const _id = id.toString();
-    const userData: UserEntry = {
-      _id,
+    const userData: Omit<UserEntry, '_id'> = {
       accessToken,  
-      accessTokenExpiry: expires_at * 1000,
-      refreshToken
+      accessTokenExpiry: expires_at * 1_000,
+      refreshToken,
+      stravaID
     };
 
-    await createOrUpdateUserEntry(userData);
+    const existingUser = await getUserEntryByStravaID(stravaID);
+    if (!existingUser) {
+      const userID = uuidv4();
+      console.log(`No entry for Strava ID: ${stravaID}, creating user: ${userID}`);
+      createUserEntry({ ...userData, _id: userID });
+      
+      return userID;
+    }
 
-    return _id;
+    console.log(`Updating existing user ${existingUser._id}`);
+    updateUserEntry({ ...existingUser, ...userData });
+
+    return existingUser._id;
   } catch (e) {
     console.log('Token exchange failed', e);
     return null;
   }
+};
+
+// TODO: When should access tokens be purged?
+export const createNewAccessToken = async (userID: string): Promise<string> => {
+  const accessToken = uuidv4();
+  const accessTokenEntry: AccessTokenEntry = {
+    _id: accessToken,
+    userID,
+    created: Date.now()
+  };
+
+  createAccessTokenEntry(accessTokenEntry);
+
+  return accessToken;
+};
+
+export const getUserIDFromAccessToken = async(accessToken: string): Promise<string | null> => {
+  const entry = await getAccessTokenEntry(accessToken);
+  if (!entry) {
+    return null;
+  }
+
+  const currentTime = Date.now();
+  if (currentTime - entry.created > ACCESS_TOKEN_EXPIRY_MS) {
+    deleteAccessTokenEntry(accessToken);
+    return null;
+  }
+
+  return entry.userID;
 };

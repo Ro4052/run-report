@@ -107,9 +107,14 @@ export const processWebhookEvent = async (
 
   console.log(`Deauthorising: ${stravaID}`);
   const userEntry = await getUserEntryByStravaID(stravaID);
-  if (userEntry) {
-    const userID = userEntry._id;
-    await deleteUserEntry(userID);
-    await deleteAccessTokenEntriesForUserID(userID);
+  if (!userEntry) {
+    console.log(`Could not find user with Strava ID: ${stravaID}`);
+    return;
   }
+
+  const userID = userEntry._id;
+  console.log(`Continuing with deauthorisation for: ${userID}`);
+
+  await deleteUserEntry(userID);
+  await deleteAccessTokenEntriesForUserID(userID);
 };

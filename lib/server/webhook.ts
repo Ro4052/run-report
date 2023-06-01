@@ -3,7 +3,7 @@ import absoluteUrl from 'next-absolute-url';
 import fetch from 'node-fetch';
 
 import { createURL } from './create-url';
-import { createOrUpdateWebhookSubscription, deleteUserEntry, getWebhookSubscription } from './db';
+import { createOrUpdateWebhookSubscription, deleteAccessTokenEntriesForUserID, deleteUserEntry, getUserEntryByStravaID, getWebhookSubscription } from './db';
 import { STRAVA_HOST } from './shared-constants';
 
 const SUBSCRIBE_PATH = '/api/v3/push_subscriptions';
@@ -80,7 +80,7 @@ interface WebhookEvent {
 }
 
 export const processWebhookEvent = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { object_id, updates }: WebhookEvent = req.body;
+  const { object_id: stravaID, updates }: WebhookEvent = req.body;
   console.log('Processing Webhook event');
   console.log(req.body);
   res.status(200).end();
@@ -89,6 +89,11 @@ export const processWebhookEvent = async (req: NextApiRequest, res: NextApiRespo
     return;
   }
 
-  console.log(`Deauthorising '${object_id}'`);
-  deleteUserEntry(object_id.toString());
+  console.log(`Deauthorising: ${stravaID}`);
+  const userEntry = await getUserEntryByStravaID(stravaID);
+  if (userEntry) {
+    const userID = userEntry._id;
+    deleteUserEntry(userID);
+    deleteAccessTokenEntriesForUserID(userID);
+  }
 };

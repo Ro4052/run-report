@@ -2,10 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getCookie } from 'cookies-next';
 
 import type { ActivityTotals } from '../../../types/activities';
-import { STRAVA_HOST, USER_ID_COOKIE } from '../../../lib/server/shared-constants';
+import { STRAVA_HOST, ACCESS_TOKEN_COOKIE } from '../../../lib/server/shared-constants';
 import { redirectToErrorPage } from '../../../lib/server/redirect-response';
 import { getUserEntry } from '../../../lib/server/db';
 import { createURL } from '../../../lib/server/create-url';
+import { getUserIDFromAccessToken } from '../../../lib/server/tokens';
 
 const ACTIVITIES_PATH = '/api/v3/activities';
 
@@ -61,8 +62,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<ActivityTotals>
   const { method } = req;
   switch (method) {
     case 'GET':
-      const userID = getCookie(USER_ID_COOKIE, { req, res });
-      if (typeof userID === 'string' && userID !== '') {
+      const accessToken = getCookie(ACCESS_TOKEN_COOKIE, { req, res });
+      const userID = typeof accessToken === 'string' ? await getUserIDFromAccessToken(accessToken) : null;
+      if (userID) {
         const totals = await getActivityTotals(userID);
         res.status(200).json(totals);
       } else {

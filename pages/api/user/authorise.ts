@@ -2,22 +2,23 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getCookie } from 'cookies-next';
 
 import { initiateOAuthJourney } from '../../../lib/server/oauth-journey';
-import { hasAccessTokenExpired, refreshAccessToken } from '../../../lib/server/tokens';
+import { getUserIDFromAccessToken, hasStravaAccessTokenExpired, refreshStravaAccessToken } from '../../../lib/server/tokens';
 import { getUserEntry } from '../../../lib/server/db';
-import { USER_ID_COOKIE } from '../../../lib/server/shared-constants';
+import { ACCESS_TOKEN_COOKIE } from '../../../lib/server/shared-constants';
 import { initialiseWebhook } from '../../../lib/server/webhook';
 
-const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<string>, userID: string) => {
-  console.log(`Using existing user ID: ${userID}`);
-  const user = await getUserEntry(userID);
+const startAuthoriseWithAccessToken = async (req: NextApiRequest, res: NextApiResponse<string>, accessToken: string) => {
+  console.log(`Using existing access token: ${accessToken}`);
+  const userID = await getUserIDFromAccessToken(accessToken);
+  const user = userID ? await getUserEntry(userID) : null;
   if (!user) {
     initiateOAuthJourney(req, res);
     return;
   }
 
-  if (hasAccessTokenExpired(user)) {
+  if (hasStravaAccessTokenExpired(user)) {
     try {
-      await refreshAccessToken(user);
+      await refreshStravaAccessToken(user);
     } catch (e) {
       initiateOAuthJourney(req, res);
       return;
@@ -30,11 +31,11 @@ const startAuthoriseWithID = async (req: NextApiRequest, res: NextApiResponse<st
 const authorise = async (req: NextApiRequest, res: NextApiResponse<string>) => {
   try {
     initialiseWebhook(req);
-    const userID = getCookie(USER_ID_COOKIE, { req, res });
-    if (!userID || typeof userID !== 'string') {
+    const accessToken = getCookie(ACCESS_TOKEN_COOKIE, { req, res });
+    if (!accessToken || typeof accessToken !== 'string') {
       initiateOAuthJourney(req, res);
     } else {
-      await startAuthoriseWithID(req, res, userID);
+      await startAuthoriseWithAccessToken(req, res, accessToken);
     }
   } catch (e) {
     res.status(400).end();
